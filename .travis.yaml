@@ -1,0 +1,14 @@
+language: go
+
+go:
+  - 1.12
+  - tip
+
+before_install:
+  - go get -v ./...
+
+script:
+  - GO111module=on go test -v ./... -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t 86133b2e-faaf-440c-aa96-74c82701319c
