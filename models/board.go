@@ -3,12 +3,10 @@ package models
 import (
 	"errors"
 	"fmt"
-	"log"
-
 	wraperrors "github.com/pkg/errors"
 )
 
-type board [][]bool
+type board [][]int
 
 func NewBoard(dimensions, startX, startY int) (board, error) {
 	if startX >= dimensions || startY >= dimensions {
@@ -20,9 +18,9 @@ func NewBoard(dimensions, startX, startY int) (board, error) {
 
 	brd := make(board, dimensions)
 	for i := range brd {
-		brd[i] = make([]bool, dimensions)
+		brd[i] = make([]int, dimensions)
 	}
-	if err := brd.Move(startX, startY); err != nil {
+	if err := brd.Move(startX, startY, 0); err != nil {
 		return nil, wraperrors.Wrap(err, "failed to create board")
 	}
 
@@ -32,7 +30,7 @@ func NewBoard(dimensions, startX, startY int) (board, error) {
 func (b board) AvailableMoves(x, y int) []Coord {
 	possibleMoves := make([]Coord, 0)
 	for _, m := range moves {
-		if x+m.X < len(b) && y+m.Y < len(b) && x+m.X >= 0 && y+m.Y >= 0 && !b[m.X+x][m.Y+y] {
+		if x+m.X < len(b) && y+m.Y < len(b) && x+m.X >= 0 && y+m.Y >= 0 && b[m.X+x][m.Y+y] == 0 {
 			possibleMoves = append(possibleMoves, Coord{X: m.X + x, Y: m.Y + y})
 		}
 
@@ -52,15 +50,15 @@ func (b board) LeastMovesCoord(moves []Coord) Coord {
 	return move
 }
 
-func (b board) Move(x, y int) error {
+func (b board) Move(x, y, visited int) error {
 	if x >= len(b) || y >= len(b) || x < 0 || y < 0 {
 		return errors.New(fmt.Sprintf("position {%v,%v} moves cursor out of bounds", x, y))
 	}
-	if b[x][y] {
+	if b[x][y] != 0 {
 		return errors.New(fmt.Sprintf("position {%v,%v} already taken", x, y))
 	}
 
-	b[x][y] = true
+	b[x][y] = visited + 1
 	b.View()
 	return nil
 }
@@ -69,7 +67,7 @@ func (b board) Visited() int {
 	count := 0
 	for xi, x := range b {
 		for yi, _ := range x {
-			if b[xi][yi] {
+			if b[xi][yi] != 0 {
 				count++
 			}
 		}
@@ -78,8 +76,11 @@ func (b board) Visited() int {
 }
 
 func (b board) View() {
-	for x1, _ := range b {
-		log.Println(b[x1])
+	for _, x := range b {
+		for _, y := range x {
+			print(y, "\t")
+		}
+		println()
 	}
 
 }

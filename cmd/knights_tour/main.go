@@ -6,6 +6,7 @@ import (
 
 	"github.com/ahab94/go-knight/config"
 	"github.com/ahab94/go-knight/models"
+
 	"github.com/spf13/viper"
 )
 
@@ -28,7 +29,7 @@ func main() {
 		}
 
 		coord := board.LeastMovesCoord(moves)
-		if err := board.Move(coord.X, coord.Y); err != nil {
+		if err := board.Move(coord.X, coord.Y, visited); err != nil {
 			panic(err)
 		}
 		moves = board.AvailableMoves(coord.X, coord.Y)
